@@ -3,6 +3,7 @@ import express from "express";
 import mongoose from "mongoose";
 import userRouter from "./routes/user.route.js"
 import authRouter from "./routes/auth.route.js"
+import listingRouter from "./routes/listing.route.js"
 import cookieParser from "cookie-parser";
 
 configDotenv()
@@ -19,6 +20,7 @@ mongoose.connect(process.env.MONGO).then(()=>console.log("Connected to DB")).cat
 app.use("/api/user",userRouter)
 
 app.use('/api/auth',authRouter)
+app.use('/api/listing',listingRouter)
 
 app.use((err,req,res,next)=>{
     const statuscode = err.statusCode || 500
