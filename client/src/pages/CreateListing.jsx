@@ -132,7 +132,7 @@ const CreateListing = () => {
         return;
       }
       setLoading(false);
-      navigate(`listing/${data._id}`);
+      navigate(`/listing/${data._id}`);
     } catch (error) {
       setLoading(false);
       setError(error.message);
