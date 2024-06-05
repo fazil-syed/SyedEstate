@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import ListingItem from "../components/ListingItem";
 
 const Search = () => {
   const [sideBarData, setSideBarData] = useState({
@@ -222,16 +223,34 @@ const Search = () => {
           </button>
         </form>
       </div>
-      <div className="">
+      <div className="flex-1">
         <h1 className="text-3xl p-3 font-semibold border-b text-slate-700 mt-5">
           Listing Results:
         </h1>
-        {error && (
-          <p className="text-red-700 mt-7 text-center">Something Went Wrong</p>
-        )}
-        {loading && (
-          <p className="text-slate-700 mt-7 text-center">Loading...</p>
-        )}
+        <div className="p-7 flex flex-wrap gap-4">
+          {error && (
+            <p className="text-red-700  text-center text-xl">
+              Something Went Wrong
+            </p>
+          )}
+          {loading && (
+            <p className="text-slate-700  text-center text-xl w-full">
+              Loading...
+            </p>
+          )}
+          {!error && !loading && listings && listings.length === 0 && (
+            <p className="text-center text-slate-700  text-xl">
+              No Listings found!
+            </p>
+          )}
+          {!error &&
+            !loading &&
+            listings &&
+            listings.length !== 0 &&
+            listings.map((listing) => (
+              <ListingItem key={listing._id} listing={listing} />
+            ))}
+        </div>
       </div>
     </div>
   );
