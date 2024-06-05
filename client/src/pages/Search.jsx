@@ -1,11 +1,125 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Search = () => {
-  const handleChange = () => {};
+  const [sideBarData, setSideBarData] = useState({
+    searchTerm: "",
+    type: "all",
+    parking: false,
+    furnished: false,
+    offer: false,
+    sort: "createdAt",
+    order: "desc",
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [listings, setListings] = useState(null);
+  const navigate = useNavigate();
+  const handleChange = (e) => {
+    if (e.target.id === "sort_order") {
+      const sort = e.target.value.split("_")[0] || "createdAt";
+      const order = e.target.value.split("_")[1] || "desc";
+      setSideBarData({
+        ...sideBarData,
+        sort,
+        order,
+      });
+    }
+    if (e.target.id === "searchTerm") {
+      setSideBarData({
+        ...sideBarData,
+        searchTerm: e.target.value,
+      });
+    }
+    if (
+      e.target.id === "offer" ||
+      e.target.id === "parking" ||
+      e.target.id === "furnished"
+    ) {
+      setSideBarData({
+        ...sideBarData,
+        [e.target.id]: e.target.checked || e.target.checked === "true",
+      });
+    }
+    if (
+      e.target.id === "all" ||
+      e.target.id === "rent" ||
+      e.target.id === "sale"
+    ) {
+      setSideBarData({
+        ...sideBarData,
+        type: e.target.id,
+      });
+    }
+  };
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const urlSearchTerm = urlParams.get("searchTerm");
+    const urlType = urlParams.get("type");
+    const urlParking = urlParams.get("parking");
+    const urlFurnished = urlParams.get("furnished");
+    const urlOffer = urlParams.get("offer");
+    const urlSort = urlParams.get("sort");
+    const urlOrder = urlParams.get("order");
+    if (
+      urlSearchTerm ||
+      urlFurnished ||
+      urlOffer ||
+      urlOrder ||
+      urlParking ||
+      urlSort ||
+      urlType
+    ) {
+      setSideBarData({
+        searchTerm: urlSearchTerm || "",
+        type: urlType || "all",
+        parking: urlParking === "true",
+        furnished: urlFurnished === "true",
+        offer: urlOffer === "true",
+        order: urlOrder || "desc",
+        sort: urlSort || "createdAt",
+      });
+    }
+    const searchQuery = urlParams.toString();
+    const fetchListings = async () => {
+      try {
+        setLoading(true);
+        setError(false);
+        const res = await fetch(`/api/listing/get?${searchQuery}`);
+        const data = await res.json();
+        if (data.success === false) {
+          setLoading(false);
+          setError(true);
+          return;
+        }
+        setError(false);
+        setLoading(false);
+        setListings(data);
+      } catch (error) {
+        setLoading(false);
+        setError(true);
+      }
+    };
+    fetchListings();
+  }, [location.search]);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const urlParams = new URLSearchParams();
+    urlParams.set("searchTerm", sideBarData.searchTerm);
+    urlParams.set("type", sideBarData.type);
+    urlParams.set("offer", sideBarData.offer);
+    urlParams.set("parking", sideBarData.parking);
+    urlParams.set("furnished", sideBarData.furnished);
+    urlParams.set("sort", sideBarData.sort);
+    urlParams.set("order", sideBarData.order);
+    const searchQuery = urlParams.toString();
+    navigate(`/search?${searchQuery}`);
+  };
   return (
     <div className="flex flex-col md:flex-row">
       <div className="p-7 border-b-2  md:border-r-2 md:min-h-screen">
-        <form className="flex flex-col gap-8">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-8">
           <div className="flex items-center gap-2">
             <label className="whitespace-nowrap">Search Term:</label>
             <input
@@ -13,6 +127,8 @@ const Search = () => {
               id="searchTerm"
               placeholder="Search..."
               className="border rounded-lg p-3 w-full"
+              value={sideBarData.searchTerm}
+              onChange={handleChange}
             />
           </div>
           <div className="flex gap-2 flex-wrap items-center">
@@ -25,6 +141,7 @@ const Search = () => {
                 id="all"
                 className="w-5"
                 onChange={handleChange}
+                checked={sideBarData.type === "all"}
               />
               <span>Rent & Sale</span>
             </div>
@@ -34,6 +151,7 @@ const Search = () => {
                 id="rent"
                 className="w-5"
                 onChange={handleChange}
+                checked={sideBarData.type === "rent"}
               />
               <span>Rent </span>
             </div>
@@ -43,6 +161,7 @@ const Search = () => {
                 id="sale"
                 className="w-5"
                 onChange={handleChange}
+                checked={sideBarData.type === "sale"}
               />
               <span>Sale</span>
             </div>
@@ -52,6 +171,7 @@ const Search = () => {
                 id="offer"
                 className="w-5"
                 onChange={handleChange}
+                checked={sideBarData.offer}
               />
               <span>Offer</span>
             </div>
@@ -66,6 +186,7 @@ const Search = () => {
                 id="parking"
                 className="w-5"
                 onChange={handleChange}
+                checked={sideBarData.parking}
               />
               <span>Parking</span>
             </div>
@@ -75,6 +196,7 @@ const Search = () => {
                 id="furnished"
                 className="w-5"
                 onChange={handleChange}
+                checked={sideBarData.furnished}
               />
               <span>Furnished </span>
             </div>
@@ -83,11 +205,16 @@ const Search = () => {
             <label htmlFor="" className="font-semibold">
               Sort:
             </label>
-            <select id="sort_order" className="border rounded-lg p-3 ">
-              <option value="">Price high to low</option>
-              <option value="">Price low to high</option>
-              <option value="">Latest</option>
-              <option value="">Oldest</option>
+            <select
+              onChange={handleChange}
+              value={`${sideBarData.sort}_${sideBarData.order}`}
+              id="sort_order"
+              className="border rounded-lg p-3 "
+            >
+              <option value="regularPrice_desc">Price high to low</option>
+              <option value="regularPrice_asc">Price low to high</option>
+              <option value="createdAt_desc">Latest</option>
+              <option value="createdAt_asc">Oldest</option>
             </select>
           </div>
           <button className="bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95">
@@ -99,6 +226,12 @@ const Search = () => {
         <h1 className="text-3xl p-3 font-semibold border-b text-slate-700 mt-5">
           Listing Results:
         </h1>
+        {error && (
+          <p className="text-red-700 mt-7 text-center">Something Went Wrong</p>
+        )}
+        {loading && (
+          <p className="text-slate-700 mt-7 text-center">Loading...</p>
+        )}
       </div>
     </div>
   );
