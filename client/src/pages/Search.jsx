@@ -15,6 +15,7 @@ const Search = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [listings, setListings] = useState(null);
+  const [showMore, setShowMore] = useState(false);
   const navigate = useNavigate();
   const handleChange = (e) => {
     if (e.target.id === "sort_order") {
@@ -87,19 +88,24 @@ const Search = () => {
       try {
         setLoading(true);
         setError(false);
+        setShowMore(false);
         const res = await fetch(`/api/listing/get?${searchQuery}`);
         const data = await res.json();
         if (data.success === false) {
           setLoading(false);
           setError(true);
+          setShowMore(false);
           return;
         }
+        if (data.length > 8) setShowMore(true);
+
         setError(false);
         setLoading(false);
         setListings(data);
       } catch (error) {
         setLoading(false);
         setError(true);
+        setShowMore(false);
       }
     };
     fetchListings();
@@ -116,6 +122,36 @@ const Search = () => {
     urlParams.set("order", sideBarData.order);
     const searchQuery = urlParams.toString();
     navigate(`/search?${searchQuery}`);
+  };
+  const handleShowMore = async () => {
+    const numberOfListings = listings.length;
+    const urlParams = new URLSearchParams(location.search);
+    const startIndex = numberOfListings;
+    urlParams.set("startIndex", startIndex);
+    const searchQuery = urlParams.toString();
+    try {
+      setLoading(true);
+      setError(false);
+      setShowMore(false);
+      const res = await fetch(`/api/listing/get?${searchQuery}`);
+      const data = await res.json();
+      if (data.success === false) {
+        setLoading(false);
+        setError(true);
+        setShowMore(false);
+        return;
+      }
+      if (data.length > 8) setShowMore(true);
+
+      setError(false);
+      setLoading(false);
+      // console.log(searchQuery);
+      setListings([...listings, ...data]);
+    } catch (error) {
+      setLoading(false);
+      setError(true);
+      setShowMore(false);
+    }
   };
   return (
     <div className="flex flex-col md:flex-row">
@@ -250,6 +286,14 @@ const Search = () => {
             listings.map((listing) => (
               <ListingItem key={listing._id} listing={listing} />
             ))}
+          {showMore && (
+            <p
+              onClick={handleShowMore}
+              className="cursor-pointer p-7 hover:underline text-center w-full  text-green-700"
+            >
+              Show More
+            </p>
+          )}
         </div>
       </div>
     </div>
