@@ -145,7 +145,6 @@ const Search = () => {
 
       setError(false);
       setLoading(false);
-      // console.log(searchQuery);
       setListings([...listings, ...data]);
     } catch (error) {
       setLoading(false);
