@@ -34,29 +34,28 @@ SyedEstate is a full-stack web application designed to streamline the process of
 2. **Install dependencies** for both the frontend and backend:
 
     ```bash
+    npm install
     cd client
     npm install
-    cd ../server
-    npm install
+    
     ```
 
 3. **Create a `.env` file** in the `server` directory and add the following environment variables:
 
     ```plaintext
-    MONGO_URI=your-mongodb-uri
+    MONGO=your-mongodb-uri
     JWT_SECRET=your-jwt-secret
-    PORT=5000
+    VITE_FIREBASE_API_KEY=your-firebase-api-key
     ```
 
 4. **Run the application**:
 
     ```bash
     # Start the backend server
-    cd server
     npm start
 
     # Start the frontend
-    cd ../client
+    cd client
     npm start
     ```
 
