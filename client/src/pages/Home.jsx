@@ -91,7 +91,7 @@ const Home = () => {
         </h1>
         <div className="text-gray-500 text-xs sm:text-sm">
           Syed Estate is the one stop platform to help you find your next home
-          fast, easy amd comfortable <br /> We have a wide range of options for
+          fast, easy and comfortable <br /> We have a wide range of options for
           you to choose from
         </div>
         <Link
